@@ -1,0 +1,29 @@
+{
+  "name": "ilyaotinov/command",
+  "description": "Library for make and run CLI commands",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ilya Otinov",
+      "email": "ilya.otinov@gmail.com"
+    }
+  ],
+  "support": {
+    "email": "ilya.otinov@gmail.com"
+  },
+  "require": {
+    "psr/container": "^2.0.2",
+    "ext-yaml": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ilyaotinov\\CLI\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Ilyaotinov\\tests\\CLI\\": "tests/"
+    }
+  }
+}
