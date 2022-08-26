@@ -8,6 +8,6 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 $commandLoader = new CommandLoader(new YamlConfigParser());
 $commandList = $commandLoader->getCommandList();
 
-foreach ($commandList as $command) {
-    $command->handle();
-}
+$commandLoader->printCommandList();
+
+$commandLoader->execute($argv[1]);

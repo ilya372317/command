@@ -1,6 +1,6 @@
 <?php
 
-namespace Ilyaotinov\Output;
+namespace Ilyaotinov\CLI\Output;
 
 interface OutputInterface
 {

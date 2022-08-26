@@ -25,15 +25,42 @@ class CommandLoader
         foreach ($commandConfig as $command) {
             try {
                 $this->checkCommandConfig($command);
-                $result[] = $this->makeCommandObject($command['class']);
+                $result[] = $this->makeCommandObject($command);
             } catch (\Exception $exception) {
                 //TODO: Make write class
-                fwrite(STDIN, $exception->getMessage().PHP_EOL);
+                fwrite(STDOUT, $exception->getMessage().PHP_EOL);
                 exit();
             }
         }
 
         return $result;
+    }
+
+    public function execute(string $commandName): void
+    {
+        $commandList = $this->getCommandList();
+        $commands = array_filter(
+            $commandList,
+            fn($command) => strtolower($commandName) === strtolower($command->getName())
+        );
+
+        if (count($commands) < 1) {
+            $this->writeDataAndExit('Command {{'.$commandName.'}} does not exist');
+        }
+        $command = $commands[array_key_first($commands)];
+        $command->handle();
+    }
+
+    public function printCommandList(): void
+    {
+        $commandList = $this->getCommandList();
+        fwrite(STDOUT, 'Available commands:'.PHP_EOL);
+        array_map(function ($command) {
+            fwrite(STDOUT, '-------------------------' . PHP_EOL);
+            fwrite(STDOUT, '-name: '.$command->getName().PHP_EOL);
+            fwrite(STDOUT, '-description'.$command->getDescription().PHP_EOL);
+            fwrite(STDOUT, '-------------------------' . PHP_EOL);
+        }, $commandList);
     }
 
     private function checkCommandConfig(array $commandConf): void
@@ -56,18 +83,18 @@ class CommandLoader
     //TODO: Make write class
     private function writeDataAndExit(string $data): void
     {
-        fwrite(STDIN, $data . PHP_EOL);
+        fwrite(STDOUT, $data.PHP_EOL);
         exit();
     }
 
     /**
      * @throws ReflectionException
      */
-    private function makeCommandObject(string $class): AbstractCommand
+    private function makeCommandObject(array $commandCongif): AbstractCommand
     {
-        $class = new \ReflectionClass($class);
+        $class = new \ReflectionClass($commandCongif['class']);
 
-        return $class->newInstance();
+        return $class->newInstance($commandCongif['name'], $commandCongif['description']);
     }
 
     private function getCommandConfig(): ?array
@@ -76,7 +103,7 @@ class CommandLoader
             $commandConfigData = $this->configParser->get('commands');
         } catch (\RuntimeException $exception) {
             //TODO: Make writer class
-            fwrite(STDIN, $exception->getMessage().PHP_EOL);
+            fwrite(STDOUT, $exception->getMessage().PHP_EOL);
             exit();
         }
 
