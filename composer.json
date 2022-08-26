@@ -18,7 +18,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Ilyaotinov\\CLI\\": "src/"
+      "Ilyaotinov\\CLI\\": "src/",
+      "Command\\Test\\": "app/Command/"
     }
   },
   "autoload-dev": {
