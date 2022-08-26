@@ -5,7 +5,7 @@ namespace Ilyaotinov\CLI;
 use Ilyaotinov\CLI\Input\InputInterface;
 use Ilyaotinov\Output\OutputInterface;
 
-class Command
+abstract class AbstractCommand
 {
     private InputInterface $input;
     private OutputInterface $output;

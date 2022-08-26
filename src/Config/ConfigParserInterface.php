@@ -2,20 +2,16 @@
 
 namespace Ilyaotinov\CLI\Config;
 
+use RuntimeException;
+
 interface ConfigParserInterface
 {
     /**
-     * Parse all config contents as associative array.
-     *
-     * @return string
-     */
-    public function getContentArray(): array;
-
-    /**
      * Get config value by key.
      *
-     * @param string $key
-     * @return array|string
+     * @param  string  $key
+     * @throws RuntimeException
+     * @return array|string|int
      */
     public function get(string $key): array|string|int;
 
