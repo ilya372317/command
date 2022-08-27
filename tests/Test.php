@@ -5,9 +5,6 @@ use Ilyaotinov\CLI\Config\YamlConfigParser;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$commandLoader = new CommandLoader(new YamlConfigParser());
-$commandList = $commandLoader->getCommandList();
+$commandLoader = new CommandLoader(new YamlConfigParser(), $argv);
 
-$commandLoader->printCommandList();
-
-$commandLoader->execute($argv[1]);
+$commandLoader->execute();

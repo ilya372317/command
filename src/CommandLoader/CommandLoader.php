@@ -5,16 +5,24 @@ namespace Ilyaotinov\CLI\CommandLoader;
 use Ilyaotinov\CLI\AbstractCommand;
 use Ilyaotinov\CLI\Config\ConfigParserInterface;
 use Ilyaotinov\CLI\Config\YamlConfigParser;
+use Ilyaotinov\CLI\Input\Input;
+use Ilyaotinov\CLI\Output\Output;
+use Ilyaotinov\CLI\Output\OutputInterface;
+use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
 
 class CommandLoader
 {
-    private ConfigParserInterface $configParser;
+    public const COMMAND_NAME_INDEX = 1;
 
-    public function __construct(ConfigParserInterface $configParser)
+    private ConfigParserInterface $configParser;
+    private array $argv;
+
+    public function __construct(ConfigParserInterface $configParser, array $argv)
     {
         $this->configParser = $configParser;
         $this->createCommandConfig();
+        $this->argv = $argv;
     }
 
     public function getCommandList(): array
@@ -27,8 +35,7 @@ class CommandLoader
                 $this->checkCommandConfig($command);
                 $result[] = $this->makeCommandObject($command);
             } catch (\Exception $exception) {
-                //TODO: Make write class
-                fwrite(STDOUT, $exception->getMessage().PHP_EOL);
+                $this->writeData($exception->getMessage());
                 exit();
             }
         }
@@ -36,33 +43,42 @@ class CommandLoader
         return $result;
     }
 
-    public function execute(string $commandName): void
+    public function execute(): void
     {
-        $commandList = $this->getCommandList();
-        $commands = array_filter(
-            $commandList,
-            fn($command) => strtolower($commandName) === strtolower($command->getName())
-        );
+        $commandNameSet = isset($this->argv[self::COMMAND_NAME_INDEX]);
 
-        if (count($commands) < 1) {
-            $this->writeDataAndExit('Command {{'.$commandName.'}} does not exist');
+        if ($commandNameSet) {
+            $commandName = $this->argv[self::COMMAND_NAME_INDEX];
+
+            $commandList = $this->getCommandList();
+            $commands = array_filter(
+                $commandList,
+                fn($command) => strtolower($this->argv[self::COMMAND_NAME_INDEX]) === strtolower($command->getName())
+            );
+
+            if (count($commands) < 1) {
+                $this->writeDataAndExit('Command {{' . $commandName . '}} does not exist');
+            }
+            $command = $commands[array_key_first($commands)];
+            $command->handle();
+        } else {
+            $this->printCommandList();
         }
-        $command = $commands[array_key_first($commands)];
-        $command->handle();
     }
 
     public function printCommandList(): void
     {
         $commandList = $this->getCommandList();
-        fwrite(STDOUT, 'Available commands:'.PHP_EOL);
+        $this->writeData('Available commands:');
         array_map(function ($command) {
-            fwrite(STDOUT, '-------------------------' . PHP_EOL);
-            fwrite(STDOUT, '-name: '.$command->getName().PHP_EOL);
-            fwrite(STDOUT, '-description'.$command->getDescription().PHP_EOL);
-            fwrite(STDOUT, '-------------------------' . PHP_EOL);
+            $this->writeData('-------------------------');
+            $this->writeData('-name: ' . $command->getName());
+            $this->writeData('-description: ' . $command->getDescription());
+            $this->writeData('-------------------------');
         }, $commandList);
     }
 
+    //TODO: replace it
     private function checkCommandConfig(array $commandConf): void
     {
         $classConfNotSet = !isset($commandConf['class']);
@@ -70,21 +86,32 @@ class CommandLoader
         $descriptionConfNotSet = !isset($commandConf['description']);
 
         if ($classConfNotSet) {
-            $this->writeDataAndExit('Class command not set in config file');
+            $this->writeDataAndExit('[Config error] Class command not set in config file');
         }
         if ($nameConfNotSet) {
-            $this->writeDataAndExit('Name of command not set in config file');
+            $this->writeDataAndExit('[Config error] Name of command not set in config file');
         }
         if ($descriptionConfNotSet) {
-            $this->writeDataAndExit('Description of command not set in config file');
+            $this->writeDataAndExit('[Config error] Description of command not set in config file');
         }
     }
 
-    //TODO: Make write class
-    private function writeDataAndExit(string $data): void
+    #[NoReturn] private function writeDataAndExit(string $data): void
     {
-        fwrite(STDOUT, $data.PHP_EOL);
+        $output = $this->getOutput();
+        $output->writeln($data);
         exit();
+    }
+
+    private function writeData(string $data): void
+    {
+        $output = $this->getOutput();
+        $output->writeln($data);
+    }
+
+    private function getOutput(): OutputInterface
+    {
+        return new Output();
     }
 
     /**
@@ -93,8 +120,13 @@ class CommandLoader
     private function makeCommandObject(array $commandCongif): AbstractCommand
     {
         $class = new \ReflectionClass($commandCongif['class']);
-
-        return $class->newInstance($commandCongif['name'], $commandCongif['description']);
+        //TODO: make it polymorphic;
+        return $class->newInstance(
+            $commandCongif['name'],
+            $commandCongif['description'],
+            new Input($this->argv),
+            new Output()
+        );
     }
 
     private function getCommandConfig(): ?array
@@ -102,9 +134,7 @@ class CommandLoader
         try {
             $commandConfigData = $this->configParser->get('commands');
         } catch (\RuntimeException $exception) {
-            //TODO: Make writer class
-            fwrite(STDOUT, $exception->getMessage().PHP_EOL);
-            exit();
+            $this->writeDataAndExit($exception->getMessage());
         }
 
         return $commandConfigData;
@@ -113,12 +143,12 @@ class CommandLoader
     //TODO: replace to helper class
     private function createCommandConfig(): void
     {
-        $basedir = dirname(__DIR__, YamlConfigParser::BASE_DIR_LEVEL).'/config';
+        $basedir = dirname(__DIR__, YamlConfigParser::BASE_DIR_LEVEL) . '/config';
         if (!is_dir($basedir)) {
             mkdir($basedir);
         }
 
-        $configExist = file_exists($basedir.'/'.'command.yaml');
+        $configExist = file_exists($basedir . '/' . 'command.yaml');
 
         if (!$configExist) {
             $yamlData = yaml_emit([
@@ -131,7 +161,7 @@ class CommandLoader
                 ]
             ], YAML_UTF8_ENCODING);
 
-            $filename = $basedir.'/'.'command.yaml';
+            $filename = $basedir . '/' . 'command.yaml';
             $file = new \SplFileObject($filename, 'w+', '');
             $file->fwrite($yamlData);
             $file->rewind();

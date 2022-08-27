@@ -12,10 +12,12 @@ abstract class AbstractCommand
     protected InputInterface $input;
     protected OutputInterface $output;
 
-    public function __construct(string $name, string $description)
+    public function __construct(string $name, string $description, InputInterface $input, OutputInterface $output)
     {
         $this->name = $name;
         $this->description = $description;
+        $this->input = $input;
+        $this->output = $output;
     }
 
     public function getName(): string
