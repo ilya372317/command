@@ -3,10 +3,8 @@
 namespace Ilyaotinov\CLI\CommandLoader;
 
 use Ilyaotinov\CLI\AbstractCommand;
-use Ilyaotinov\CLI\Config\ConfigParserInterface;
-use Ilyaotinov\CLI\Config\YamlConfigParser;
-use Ilyaotinov\CLI\Input\Input;
-use Ilyaotinov\CLI\Output\Output;
+use Ilyaotinov\CLI\factory\CommandLoaderFactoryInterface;
+use Ilyaotinov\CLI\Input\InputInterface;
 use Ilyaotinov\CLI\Output\OutputInterface;
 use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
@@ -15,13 +13,12 @@ class CommandLoader
 {
     public const COMMAND_NAME_INDEX = 1;
 
-    private ConfigParserInterface $configParser;
+    private CommandLoaderFactoryInterface $commandLoaderFactory;
     private array $argv;
 
-    public function __construct(ConfigParserInterface $configParser, array $argv)
+    public function __construct(CommandLoaderFactoryInterface $commandLoaderFactory, array $argv)
     {
-        $this->configParser = $configParser;
-        $this->createCommandConfig();
+        $this->commandLoaderFactory = $commandLoaderFactory;
         $this->argv = $argv;
     }
 
@@ -60,10 +57,18 @@ class CommandLoader
                 $this->writeDataAndExit('Command {{' . $commandName . '}} does not exist');
             }
             $command = $commands[array_key_first($commands)];
-            $command->handle();
+            $this->doExecute($command);
         } else {
             $this->printCommandList();
         }
+    }
+
+    private function doExecute(AbstractCommand $command): void
+    {
+        if ($command->hasHelpArgument()) {
+            $this->writeDataAndExit($command->getDescription());
+        }
+        $command->handle();
     }
 
     public function printCommandList(): void
@@ -78,7 +83,6 @@ class CommandLoader
         }, $commandList);
     }
 
-    //TODO: replace it
     private function checkCommandConfig(array $commandConf): void
     {
         $classConfNotSet = !isset($commandConf['class']);
@@ -111,85 +115,38 @@ class CommandLoader
 
     private function getOutput(): OutputInterface
     {
-        return new Output();
+        return $this->commandLoaderFactory->getOutput();
+    }
+
+    private function getInput(): InputInterface
+    {
+        return $this->commandLoaderFactory->getInput();
     }
 
     /**
      * @throws ReflectionException
      */
-    private function makeCommandObject(array $commandCongif): AbstractCommand
+    private function makeCommandObject(array $commandConfig): AbstractCommand
     {
-        $class = new \ReflectionClass($commandCongif['class']);
+        $class = new \ReflectionClass($commandConfig['class']);
         //TODO: make it polymorphic;
         return $class->newInstance(
-            $commandCongif['name'],
-            $commandCongif['description'],
-            new Input($this->argv),
-            new Output()
+            $commandConfig['name'],
+            $commandConfig['description'],
+            $this->getInput(),
+            $this->getOutput()
         );
     }
 
     private function getCommandConfig(): ?array
     {
+        $configParser = $this->commandLoaderFactory->getConfigParser();
         try {
-            $commandConfigData = $this->configParser->get('commands');
+            $commandConfigData = $configParser->get('commands');
         } catch (\RuntimeException $exception) {
             $this->writeDataAndExit($exception->getMessage());
         }
 
         return $commandConfigData;
-    }
-
-    //TODO: replace to helper class
-    private function createCommandConfig(): void
-    {
-        $basedir = dirname(__DIR__, YamlConfigParser::BASE_DIR_LEVEL) . '/config';
-        if (!is_dir($basedir)) {
-            mkdir($basedir);
-        }
-
-        $configExist = file_exists($basedir . '/' . 'command.yaml');
-
-        if (!$configExist) {
-            $yamlData = yaml_emit([
-                'commands' => [
-                    "TestCommand" => [
-                        "class" => 'App\\AbstractCommand\\TestCommand',
-                        "name" => 'test-command',
-                        "description" => 'write your commands and put information about them there'
-                    ]
-                ]
-            ], YAML_UTF8_ENCODING);
-
-            $filename = $basedir . '/' . 'command.yaml';
-            $file = new \SplFileObject($filename, 'w+', '');
-            $file->fwrite($yamlData);
-            $file->rewind();
-            $file->fflush();
-
-            $this->writeDataOnEveryLineInFile($filename, '#');
-        }
-    }
-
-    //TODO: Replace to helper class
-    private function writeDataOnEveryLineInFile(string $filename, string $data): void
-    {
-        $originalFilename = $filename;
-
-        $originalFileObject = new \SplFileObject($originalFilename);
-
-        $tempFilename = tempnam(sys_get_temp_dir(), 'php_prepend_');
-
-        while (!$originalFileObject->eof()) {
-            $currentOriginalFileString = $originalFileObject->fgets();
-            if (strlen(trim($currentOriginalFileString)) > 0) {
-                file_put_contents($tempFilename, $data, FILE_APPEND);
-            }
-
-            file_put_contents($tempFilename, $currentOriginalFileString, FILE_APPEND);
-            $originalFileObject->next();
-        }
-        unlink($originalFilename);
-        rename($tempFilename, $originalFilename);
     }
 }

@@ -6,16 +6,15 @@ class InputDefinitionParser
 {
     public static function parse(array $inputData): InputDefinition
     {
+        array_shift($inputData);
+        array_shift($inputData);
         $optionsArray = [];
         $optionsObjects = [];
         $argumentsObjects = [];
 
         array_map(function ($input) use (&$argumentsObjects, &$optionsArray) {
             $input = trim($input);
-            $isArgument = preg_match('/^\{.+$/i', $input);
-            if (!$isArgument) {
-                $isArgument = preg_match('/.+}/i', $input);
-            }
+            $isArgument = preg_match('/^(?!(\[)).+(?!(]))$/i', $input);
 
             $isOption = preg_match('/^\[.+(=).+]$/i', $input);
 

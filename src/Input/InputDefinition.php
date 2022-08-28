@@ -52,4 +52,22 @@ class InputDefinition
         $this->arguments[] = $inputArgument;
         return $this;
     }
+
+    public function hasArgument(string $argumentValue): bool
+    {
+        $needleArgument = array_filter($this->arguments, function (InputArgument $argument) use ($argumentValue) {
+            return $argument->getValue() === $argumentValue;
+        });
+
+        return count($needleArgument) > 0;
+    }
+
+    public function hasOption(string $optionName): bool
+    {
+        $needleOption = array_filter($this->options, function (InputOption $option) use ($optionName) {
+            return $option->getName() === $optionName;
+        });
+
+        return count($needleOption) > 0;
+    }
 }

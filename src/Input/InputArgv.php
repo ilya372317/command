@@ -2,7 +2,7 @@
 
 namespace Ilyaotinov\CLI\Input;
 
-class Input implements InputInterface
+class InputArgv implements InputInterface
 {
     private InputDefinition $inputDefinition;
 
