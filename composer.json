@@ -26,5 +26,6 @@
     "psr-4": {
       "Ilyaotinov\\tests\\CLI\\": "tests/"
     }
-  }
+  },
+  "bin": ["src/xaduken.php"]
 }

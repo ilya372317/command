@@ -1,5 +1,4 @@
 <?php
-
 use Ilyaotinov\CLI\CommandLoader\CommandLoader;
 use Ilyaotinov\CLI\factory\StandardCommandLoaderFactory;
 
