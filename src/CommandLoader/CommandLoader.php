@@ -54,7 +54,7 @@ class CommandLoader
     public function execute(): void
     {
         $argv = $this->commandLoaderFactory->getCommandParameters();
-        $commandNameSet = isset($this->argv[self::COMMAND_NAME_INDEX]);
+        $commandNameSet = isset($argv[self::COMMAND_NAME_INDEX]);
 
         if ($commandNameSet) {
             $commandName = $argv[self::COMMAND_NAME_INDEX];
