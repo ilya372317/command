@@ -91,6 +91,28 @@ This command print all arguments and options from command like this:
 `$/usr/bin/php ./vendor/bin/xaduken command-info {verbose,overwrite} [log_file=app.log]
 {unlimited} [methods={create,update,delete}] [paginate=50] {log}`
 
+Console output will be:
+
+    Arguments: 
+      - verbose
+      - overwrite
+      - unlimited
+      - log
+
+    Options:
+    Name: log_file
+    Values:
+      - app.log
+    Name: methods
+    Values:
+      - create
+      - update
+      - delete
+    Name: paginate
+    Values:
+      - 50
+
+
 ### Command config example:
     commands:
     ...
@@ -135,3 +157,20 @@ This interface contains two methods:
 1. `OutputInterface::write(string $data)` - write data to console in the same line - write data to console in the same line.
 2. `OutputInterface::writeln(string $data)` - write data to console with new line.
 
+## Help: 
+For get description of the command, use {help argument}
+### Example:
+`$/usr/bin/php ./vendor/bin/xaduken command-info {help}`
+
+## Command list
+You can print command list by run xaduken script without command name.
+### Example:
+`$/usr/bin/php ./vendor/bin/xaduken`
+
+You see something like this:
+
+    Available commands:
+    -------------------------
+    -name: command-info
+    -description: print passed arguments and options with values.
+    -------------------------
