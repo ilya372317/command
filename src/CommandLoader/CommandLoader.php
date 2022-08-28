@@ -11,17 +11,23 @@ use ReflectionException;
 
 class CommandLoader
 {
+    /**
+     * Index where store command name on $argv variable
+     */
     public const COMMAND_NAME_INDEX = 1;
 
     private CommandLoaderFactoryInterface $commandLoaderFactory;
-    private array $argv;
 
-    public function __construct(CommandLoaderFactoryInterface $commandLoaderFactory, array $argv)
+    public function __construct(CommandLoaderFactoryInterface $commandLoaderFactory)
     {
         $this->commandLoaderFactory = $commandLoaderFactory;
-        $this->argv = $argv;
     }
 
+    /**
+     * Get command list from command config.
+     *
+     * @return AbstractCommand[]
+     */
     public function getCommandList(): array
     {
         $commandConfig = $this->getCommandConfig();
@@ -40,17 +46,23 @@ class CommandLoader
         return $result;
     }
 
+    /**
+     * Execute command by passed name into console.
+     *
+     * @return void
+     */
     public function execute(): void
     {
+        $argv = $this->commandLoaderFactory->getCommandParameters();
         $commandNameSet = isset($this->argv[self::COMMAND_NAME_INDEX]);
 
         if ($commandNameSet) {
-            $commandName = $this->argv[self::COMMAND_NAME_INDEX];
+            $commandName = $argv[self::COMMAND_NAME_INDEX];
 
             $commandList = $this->getCommandList();
             $commands = array_filter(
                 $commandList,
-                fn($command) => strtolower($this->argv[self::COMMAND_NAME_INDEX]) === strtolower($command->getName())
+                fn($command) => strtolower($argv[self::COMMAND_NAME_INDEX]) === strtolower($command->getName())
             );
 
             if (count($commands) < 1) {
@@ -63,14 +75,11 @@ class CommandLoader
         }
     }
 
-    private function doExecute(AbstractCommand $command): void
-    {
-        if ($command->hasHelpArgument()) {
-            $this->writeDataAndExit($command->getDescription());
-        }
-        $command->handle();
-    }
-
+    /**
+     * Print command list to the console.
+     *
+     * @return void
+     */
     public function printCommandList(): void
     {
         $commandList = $this->getCommandList();
@@ -81,6 +90,14 @@ class CommandLoader
             $this->writeData('-description: ' . $command->getDescription());
             $this->writeData('-------------------------');
         }, $commandList);
+    }
+
+    private function doExecute(AbstractCommand $command): void
+    {
+        if ($command->hasHelpArgument()) {
+            $this->writeDataAndExit($command->getDescription());
+        }
+        $command->handle();
     }
 
     private function checkCommandConfig(array $commandConf): void

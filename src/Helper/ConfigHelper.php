@@ -6,7 +6,7 @@ use Ilyaotinov\CLI\Config\YamlConfigParser;
 
 class ConfigHelper
 {
-    public static function createCommandConfig(): void
+    public static function createCommandConfigIfNotExist(): void
     {
         $basedir = dirname(__DIR__, YamlConfigParser::BASE_DIR_LEVEL) . '/config';
         if (!is_dir($basedir)) {
@@ -32,11 +32,16 @@ class ConfigHelper
             $file->rewind();
             $file->fflush();
 
-            self::writeDataOnEveryLineInFile($filename, '#');
+            self::writeDataOnEveryStartLine($filename, '#');
         }
     }
 
-    public static function writeDataOnEveryLineInFile(string $filename, string $data): void
+    /**
+     * @param string $filename
+     * @param string $data
+     * @return void
+     */
+    public static function writeDataOnEveryStartLine(string $filename, string $data): void
     {
         $originalFilename = $filename;
 

@@ -4,6 +4,12 @@ namespace Ilyaotinov\CLI\Input;
 
 class InputDefinitionParser
 {
+    /**
+     * Parse arguments and options to the InputDefinition object.
+     *
+     * @param array $inputData
+     * @return InputDefinition
+     */
     public static function parse(array $inputData): InputDefinition
     {
         array_shift($inputData);

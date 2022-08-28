@@ -9,7 +9,7 @@ use Ilyaotinov\CLI\Input\InputOption;
 use Ilyaotinov\CLI\Output\OutputInterface;
 
 /**
- * Base command class
+ * Base class for every command.
  *
  * @author Ilya Otinov
  */
@@ -59,11 +59,21 @@ abstract class AbstractCommand
         return $this->getInputDefinition()->getArguments();
     }
 
+    /**
+     * Check if arguments list has a help option.
+     *
+     * @return bool
+     */
     public function hasHelpArgument(): bool
     {
         $inputDefinition = $this->getInputDefinition();
         return $inputDefinition->hasArgument('help');
     }
 
+    /**
+     * Business logic of command.
+     *
+     * @return void
+     */
     abstract public function handle(): void;
 }

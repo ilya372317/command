@@ -11,6 +11,8 @@ class YamlConfigParser implements ConfigParserInterface
     public const BASE_DIR_LEVEL = 5;
 
     /**
+     * Parse data from yaml file to array.
+     *
      * @return array
      * @throws RuntimeException
      */
@@ -20,7 +22,7 @@ class YamlConfigParser implements ConfigParserInterface
         $configNotExist = !file_exists($configFullPath);
 
         if ($configNotExist) {
-            ConfigHelper::createCommandConfig();
+            ConfigHelper::createCommandConfigIfNotExist();
             fwrite(STDOUT, 'You need fill config file. Check it on path: ' . $configFullPath . PHP_EOL);
             exit();
         }
@@ -42,9 +44,7 @@ class YamlConfigParser implements ConfigParserInterface
     }
 
     /**
-     * @param string $key
-     * @return array|string|int
-     * @throws RuntimeException
+     * @inheritDoc
      */
     public function get(string $key): array|string|int
     {
@@ -58,6 +58,9 @@ class YamlConfigParser implements ConfigParserInterface
         return $configArray[$key];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getConfigDirectory(): string
     {
 

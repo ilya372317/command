@@ -11,6 +11,9 @@ class InputArgv implements InputInterface
         $this->inputDefinition = $this->parseInputDefinition($argv);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getDefinition(): InputDefinition
     {
         return $this->inputDefinition;

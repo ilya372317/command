@@ -11,6 +11,11 @@ use Ilyaotinov\CLI\Output\OutputInterface;
 
 class StandardCommandLoaderFactory implements CommandLoaderFactoryInterface
 {
+    /**
+     * Global $argv variable.
+     *
+     * @var string[]
+     */
     private array $argv;
 
     public function __construct(array $argv)
@@ -18,18 +23,35 @@ class StandardCommandLoaderFactory implements CommandLoaderFactoryInterface
         $this->argv = $argv;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getOutput(): OutputInterface
     {
         return new Output();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getInput(): InputInterface
     {
         return new InputArgv($this->argv);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getConfigParser(): ConfigParserInterface
     {
         return new YamlConfigParser();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCommandParameters(): array
+    {
+        return $this->argv;
     }
 }
