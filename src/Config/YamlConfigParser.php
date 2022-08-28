@@ -8,7 +8,7 @@ use RuntimeException;
 class YamlConfigParser implements ConfigParserInterface
 {
     public const CONFIG_FILENAME = 'command.yaml';
-    public const BASE_DIR_LEVEL = 4;
+    public const BASE_DIR_LEVEL = 5;
 
     /**
      * @return array
