@@ -8,7 +8,7 @@ use RuntimeException;
 class YamlConfigParser implements ConfigParserInterface
 {
     public const CONFIG_FILENAME = 'command.yaml';
-    public const BASE_DIR_LEVEL = 2;
+    public const BASE_DIR_LEVEL = 4;
 
     /**
      * @return array
@@ -46,8 +46,7 @@ class YamlConfigParser implements ConfigParserInterface
      * @return array|string|int
      * @throws RuntimeException
      */
-    public
-    function get(string $key): array|string|int
+    public function get(string $key): array|string|int
     {
         $configArray = $this->getContentArray();
         $keyNotFound = !isset($configArray[$key]);
@@ -59,8 +58,7 @@ class YamlConfigParser implements ConfigParserInterface
         return $configArray[$key];
     }
 
-    public
-    function getConfigDirectory(): string
+    public function getConfigDirectory(): string
     {
 
         return dirname(__DIR__, self::BASE_DIR_LEVEL) . '/config/';
