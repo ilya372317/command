@@ -27,5 +27,7 @@
       "Ilyaotinov\\tests\\CLI\\": "tests/"
     }
   },
-  "bin": ["src/xaduken.php"]
+  "bin": [
+    "src/Resources/bin/xaduken"
+  ]
 }
