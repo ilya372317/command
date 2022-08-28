@@ -56,7 +56,7 @@ abstract class AbstractCommand
      */
     protected function getInputArguments(): array
     {
-        return $this->getInputDefinition()->getOptions();
+        return $this->getInputDefinition()->getArguments();
     }
 
     public function hasHelpArgument(): bool
