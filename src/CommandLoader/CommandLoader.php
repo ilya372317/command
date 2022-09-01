@@ -66,7 +66,7 @@ class CommandLoader
             );
 
             if (count($commands) < 1) {
-                $this->writeDataAndExit('Command {{' . $commandName . '}} does not exist');
+                $this->writeDataAndExit('Command {{'.$commandName.'}} does not exist');
             }
             $command = $commands[array_key_first($commands)];
             $this->doExecute($command);
@@ -86,8 +86,8 @@ class CommandLoader
         $this->writeData('Available commands:');
         array_map(function ($command) {
             $this->writeData('-------------------------');
-            $this->writeData('-name: ' . $command->getName());
-            $this->writeData('-description: ' . $command->getDescription());
+            $this->writeData('-name: '.$command->getName());
+            $this->writeData('-description: '.$command->getDescription());
             $this->writeData('-------------------------');
         }, $commandList);
     }
@@ -100,8 +100,16 @@ class CommandLoader
         $command->handle();
     }
 
-    private function checkCommandConfig(array $commandConf): void
+    private function checkCommandConfig(?array $commandConf): void
     {
+        $commandConfNotDefine = !isset($commandConf);
+        if ($commandConfNotDefine) {
+            $this->writeDataAndExit(
+                '[Config error] you have empty command config.'
+                .'Please fill class, name and description in command config '
+            );
+        }
+
         $classConfNotSet = !isset($commandConf['class']);
         $nameConfNotSet = !isset($commandConf['name']);
         $descriptionConfNotSet = !isset($commandConf['description']);

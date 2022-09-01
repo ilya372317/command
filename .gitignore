@@ -1,5 +1,4 @@
-vendor/
 app/
 config/
-*.bkp
-composer.lock
+vendor/
+.idea/*
